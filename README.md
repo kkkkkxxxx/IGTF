@@ -8,6 +8,8 @@ LLM-Assisted Fake News Detection**.
 
 - `src/igtf/`: model code for text MoE encoding, 9-d intent game refinement,
   intent-text fusion, and classification.
+- `src/igtf/data_cleaning.py`: text cleaning, deduplication, 9-d vector
+  validation, and label normalization.
 - `scripts/train_igtf.py`: a compact training entry point for cached intent
   data.
 - `intent_data/1/`: GPT-5.5/default 9-d intent data.
@@ -16,8 +18,9 @@ LLM-Assisted Fake News Detection**.
 
 Each model directory contains four datasets: `weibodata`, `gossipdata`,
 `politifactdata`, and `snopesdata`. Each dataset stores one merged `all.json`
-file. `src/igtf/data.py` cleans the merged records and creates train/val/test
-splits with balanced label and dominant-intent distributions at load time.
+file. `src/igtf/data.py` loads these merged files and creates train/val/test
+splits with balanced label and dominant-intent distributions; record cleaning
+is kept in `src/igtf/data_cleaning.py`.
 
 ## Data Format
 
