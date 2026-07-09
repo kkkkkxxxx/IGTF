@@ -27,28 +27,37 @@ SPLITS = ("train", "val", "test")
 
 DATASET_DATA_DIRS = {
     "weibo": "weibodata",
+    "weibodata": "weibodata",
     "gossip": "gossipdata",
+    "gossipcop": "gossipdata",
+    "gossipdata": "gossipdata",
     "politifact": "politifactdata",
+    "politifactdata": "politifactdata",
     "snopes": "snopesdata",
+    "snopesdata": "snopesdata",
 }
 
-MODEL_DATA_FILES = {
-    "1": "1/all.json",
-    "gpt": "1/all.json",
-    "gpt55": "1/all.json",
-    "gpt5.5": "1/all.json",
-    "weibo": "1/all.json",
-    "2": "2/all.json",
-    "qwen": "2/all.json",
-    "qwen2.5": "2/all.json",
-    "politifact": "2/all.json",
-    "3": "3/all.json",
-    "llama": "3/all.json",
-    "llama3": "3/all.json",
-    "gossip": "3/all.json",
+MODEL_ALIASES = {
+    "1": "1",
+    "gpt": "1",
+    "gpt55": "1",
+    "gpt5.5": "1",
+    "gpt-5.5": "1",
+    "2": "2",
+    "qwen": "2",
+    "qwen2.5": "2",
+    "qwen-2.5": "2",
+    "3": "3",
+    "llama": "3",
+    "llama3": "3",
+    "llama-3": "3",
 }
 
-AVAILABLE_DATASETS = sorted(MODEL_DATA_FILES)
+AVAILABLE_MODELS = ("1", "2", "3")
+AVAILABLE_DATASETS = ("weibo", "gossip", "politifact", "snopes")
+AVAILABLE_DATASET_SPECS = tuple(
+    f"{model}/{dataset}" for model in AVAILABLE_MODELS for dataset in AVAILABLE_DATASETS
+)
 
 LABEL_MAP = {
     "0": 0,
@@ -67,9 +76,10 @@ LABEL_MAP = {
 
 def dataset_data_dir(data_root: str | Path, dataset_name: str) -> Path:
     """Return the legacy ``<dataset>data`` directory when it exists."""
-    if dataset_name not in DATASET_DATA_DIRS:
-        raise ValueError(f"Unknown legacy dataset {dataset_name!r}; choose from {sorted(DATASET_DATA_DIRS)}")
-    return Path(data_root) / DATASET_DATA_DIRS[dataset_name]
+    dataset_dir = DATASET_DATA_DIRS.get(dataset_name.lower())
+    if dataset_dir is None:
+        raise ValueError(f"Unknown dataset {dataset_name!r}; choose from {AVAILABLE_DATASETS}")
+    return Path(data_root) / dataset_dir
 
 
 def _iter_json_records(raw: Any) -> Iterable[Dict[str, Any]]:
@@ -173,26 +183,39 @@ def load_intent_json(path: str | Path, *, deduplicate: bool = True) -> List[Dict
     return clean_intent_rows(_iter_json_records(raw), deduplicate=deduplicate)
 
 
-def resolve_merged_data_file(data_root: str | Path, dataset_name: str) -> Path:
-    """Resolve model-id aliases such as ``1``, ``qwen``, or ``llama`` to ``all.json``."""
+def parse_dataset_spec(dataset_name: str, model_name: str = "1") -> Tuple[str, str, str]:
+    """Normalize model/dataset input into ``(model_id, dataset_key, dataset_dir)``."""
+    raw_dataset = dataset_name.strip().lower()
+    raw_model = model_name.strip().lower()
+    if "/" in raw_dataset:
+        raw_model, raw_dataset = raw_dataset.split("/", 1)
+    elif ":" in raw_dataset:
+        raw_model, raw_dataset = raw_dataset.split(":", 1)
+
+    model_id = MODEL_ALIASES.get(raw_model)
+    if model_id is None:
+        raise ValueError(f"Unknown model {model_name!r}; choose from {AVAILABLE_MODELS}")
+
+    dataset_dir = DATASET_DATA_DIRS.get(raw_dataset)
+    if dataset_dir is None:
+        raise ValueError(f"Unknown dataset {dataset_name!r}; choose from {AVAILABLE_DATASETS}")
+
+    dataset_key = dataset_dir.removesuffix("data")
+    return model_id, dataset_key, dataset_dir
+
+
+def resolve_merged_data_file(data_root: str | Path, dataset_name: str, model_name: str = "1") -> Path:
+    """Resolve model/dataset aliases to ``intent_data/<model>/<dataset>data/all.json``."""
     root = Path(data_root)
-    key = dataset_name.lower()
-    direct_dir = root / dataset_name / "all.json"
-    direct_file = root / f"{dataset_name}.json"
-    if direct_dir.exists():
-        return direct_dir
-    if direct_file.exists():
-        return direct_file
-    if key not in MODEL_DATA_FILES:
-        raise ValueError(f"Unknown dataset/model {dataset_name!r}; choose from {AVAILABLE_DATASETS}")
-    path = root / MODEL_DATA_FILES[key]
+    model_id, _, dataset_dir = parse_dataset_spec(dataset_name, model_name)
+    path = root / model_id / dataset_dir / "all.json"
     if not path.exists():
         raise FileNotFoundError(f"Missing merged intent file: {path}")
     return path
 
 
-def load_model_dataset(data_root: str | Path, dataset_name: str) -> List[Dict[str, Any]]:
-    return load_intent_json(resolve_merged_data_file(data_root, dataset_name))
+def load_model_dataset(data_root: str | Path, dataset_name: str, model_name: str = "1") -> List[Dict[str, Any]]:
+    return load_intent_json(resolve_merged_data_file(data_root, dataset_name, model_name))
 
 
 def _split_counts(n_items: int, ratios: Tuple[float, float, float]) -> Tuple[int, int, int]:
@@ -252,13 +275,14 @@ def split_intent_balanced(
 @lru_cache(maxsize=32)
 def _cached_split(
     data_root: str,
+    model_name: str,
     dataset_name: str,
     train_ratio: float,
     val_ratio: float,
     test_ratio: float,
     seed: int,
 ) -> Tuple[Tuple[Dict[str, Any], ...], Tuple[Dict[str, Any], ...], Tuple[Dict[str, Any], ...]]:
-    rows = load_model_dataset(data_root, dataset_name)
+    rows = load_model_dataset(data_root, dataset_name, model_name)
     splits = split_intent_balanced(
         rows,
         train_ratio=train_ratio,
@@ -274,6 +298,7 @@ def load_dataset_split(
     dataset_name: str,
     split: str,
     *,
+    model_name: str = "1",
     train_ratio: float = 0.70,
     val_ratio: float = 0.15,
     test_ratio: float = 0.15,
@@ -283,13 +308,15 @@ def load_dataset_split(
     if split not in SPLITS:
         raise ValueError(f"Unknown split {split!r}; choose from {SPLITS}")
 
-    if dataset_name in DATASET_DATA_DIRS:
-        legacy_path = Path(data_root) / DATASET_DATA_DIRS[dataset_name] / f"{split}.json"
+    if "/" not in dataset_name and ":" not in dataset_name:
+        dataset_dir = DATASET_DATA_DIRS.get(dataset_name.lower())
+        legacy_path = Path(data_root) / str(dataset_dir) / f"{split}.json"
         if legacy_path.exists():
             return load_intent_json(legacy_path)
 
     train_rows, val_rows, test_rows = _cached_split(
         str(Path(data_root)),
+        model_name,
         dataset_name,
         float(train_ratio),
         float(val_ratio),
@@ -304,13 +331,14 @@ def write_clean_splits(
     dataset_name: str,
     output_dir: str | Path,
     *,
+    model_name: str = "1",
     train_ratio: float = 0.70,
     val_ratio: float = 0.15,
     test_ratio: float = 0.15,
     seed: int = 42,
 ) -> Dict[str, int]:
     """Materialize cleaned, intent-balanced train/val/test JSON files."""
-    rows = load_model_dataset(data_root, dataset_name)
+    rows = load_model_dataset(data_root, dataset_name, model_name)
     splits = split_intent_balanced(
         rows,
         train_ratio=train_ratio,
@@ -357,7 +385,8 @@ class IntentTextDataset(Dataset):
 def main() -> None:
     parser = argparse.ArgumentParser(description="Clean merged 9-d intent data and create balanced splits.")
     parser.add_argument("--data-root", default="intent_data")
-    parser.add_argument("--dataset", required=True, help="Model id or alias, e.g. 1, 2, 3, gpt55, qwen, llama.")
+    parser.add_argument("--model", default="1", help="Model id or alias, e.g. 1/gpt55, 2/qwen, 3/llama.")
+    parser.add_argument("--dataset", required=True, help="Dataset name, or a combined spec such as 1/weibo.")
     parser.add_argument("--output-dir", required=True)
     parser.add_argument("--train-ratio", type=float, default=0.70)
     parser.add_argument("--val-ratio", type=float, default=0.15)
@@ -368,6 +397,7 @@ def main() -> None:
         args.data_root,
         args.dataset,
         args.output_dir,
+        model_name=args.model,
         train_ratio=args.train_ratio,
         val_ratio=args.val_ratio,
         test_ratio=args.test_ratio,

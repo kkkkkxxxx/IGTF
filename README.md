@@ -10,13 +10,14 @@ LLM-Assisted Fake News Detection**.
   intent-text fusion, and classification.
 - `scripts/train_igtf.py`: a compact training entry point for cached intent
   data.
-- `intent_data/1/all.json`: merged GPT-5.5/default 9-d intent data.
-- `intent_data/2/all.json`: merged Qwen 9-d intent data.
-- `intent_data/3/all.json`: merged LLaMA 9-d intent data.
+- `intent_data/1/`: GPT-5.5/default 9-d intent data.
+- `intent_data/2/`: Qwen 9-d intent data.
+- `intent_data/3/`: LLaMA 9-d intent data.
 
-Each model directory stores one merged file. `src/igtf/data.py` cleans the
-merged records and creates train/val/test splits with balanced label and
-dominant-intent distributions at load time.
+Each model directory contains four datasets: `weibodata`, `gossipdata`,
+`politifactdata`, and `snopesdata`. Each dataset stores one merged `all.json`
+file. `src/igtf/data.py` cleans the merged records and creates train/val/test
+splits with balanced label and dominant-intent distributions at load time.
 
 ## Data Format
 
@@ -50,18 +51,18 @@ Intent order:
 ```bash
 pip install -r requirements.txt
 set PYTHONPATH=%CD%\src
-python scripts/train_igtf.py --dataset 3 --epochs 5 --batch-size 16
+python scripts/train_igtf.py --model 3 --dataset gossip --epochs 5 --batch-size 16
 ```
 
 For Linux/macOS:
 
 ```bash
 export PYTHONPATH=$PWD/src
-python scripts/train_igtf.py --dataset 3 --epochs 5 --batch-size 16
+python scripts/train_igtf.py --model 3 --dataset gossip --epochs 5 --batch-size 16
 ```
 
-Available model ids are `1`, `2`, and `3`; aliases such as `gpt55`, `qwen`,
-and `llama` are also supported.
+Available model ids are `1`, `2`, and `3`; available datasets are `weibo`,
+`gossip`, `politifact`, and `snopes`.
 
 ## Notes
 

@@ -15,12 +15,12 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 from transformers import AutoTokenizer
 
-from igtf.data import AVAILABLE_DATASETS, IntentTextDataset, load_dataset_split
+from igtf.data import AVAILABLE_DATASETS, AVAILABLE_MODELS, IntentTextDataset, load_dataset_split
 from igtf.model import IGTFClassifier, IGTFConfig
 
 
 def default_bert_model(dataset_name: str) -> str:
-    if dataset_name.lower() in {"1", "gpt", "gpt55", "gpt5.5", "weibo"}:
+    if dataset_name.lower().split("/")[-1] in {"weibo", "weibodata"}:
         return "bert-base-chinese"
     return "bert-base-uncased"
 
@@ -56,6 +56,7 @@ def normalize_batch(batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Train IGTF with cached 9-d intent data.")
+    parser.add_argument("--model", choices=AVAILABLE_MODELS, default="1")
     parser.add_argument("--dataset", choices=AVAILABLE_DATASETS, required=True)
     parser.add_argument("--data-root", default="intent_data")
     parser.add_argument("--output-dir", default="outputs")
@@ -72,10 +73,13 @@ def main() -> None:
     bert_model = args.bert_model or default_bert_model(args.dataset)
     tokenizer = AutoTokenizer.from_pretrained(bert_model)
 
-    train_rows = load_dataset_split(args.data_root, args.dataset, "train")
-    val_rows = load_dataset_split(args.data_root, args.dataset, "val")
-    test_rows = load_dataset_split(args.data_root, args.dataset, "test")
-    print(f"Loaded {args.dataset}: train={len(train_rows)} val={len(val_rows)} test={len(test_rows)}")
+    train_rows = load_dataset_split(args.data_root, args.dataset, "train", model_name=args.model)
+    val_rows = load_dataset_split(args.data_root, args.dataset, "val", model_name=args.model)
+    test_rows = load_dataset_split(args.data_root, args.dataset, "test", model_name=args.model)
+    print(
+        f"Loaded model={args.model} dataset={args.dataset}: "
+        f"train={len(train_rows)} val={len(val_rows)} test={len(test_rows)}"
+    )
 
     train_loader = DataLoader(
         IntentTextDataset(train_rows, tokenizer, args.max_length),
@@ -99,7 +103,7 @@ def main() -> None:
     ).to(device)
     optimizer = AdamW(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
 
-    output_root = Path(args.output_dir) / args.dataset
+    output_root = Path(args.output_dir) / args.model / args.dataset
     output_root.mkdir(parents=True, exist_ok=True)
     best_val = -1.0
     best_path = output_root / "best_model.pt"
