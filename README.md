@@ -12,9 +12,9 @@ LLM-Assisted Fake News Detection**.
   validation, and label normalization.
 - `scripts/train_igtf.py`: a compact training entry point for cached intent
   data.
-- `intent_data/1/`: GPT-5.5/default 9-d intent data.
-- `intent_data/2/`: Qwen 9-d intent data.
-- `intent_data/3/`: LLaMA 9-d intent data.
+- `intent_data/qwen/`: Qwen 9-d intent data.
+- `intent_data/gpt4/`: GPT-4 9-d intent data.
+- `intent_data/claude3.5/`: Claude-3.5 9-d intent data.
 
 Each model directory contains four datasets: `weibodata`, `gossipdata`,
 `politifactdata`, and `snopesdata`. Each dataset stores one merged `all.json`
@@ -54,18 +54,18 @@ Intent order:
 ```bash
 pip install -r requirements.txt
 set PYTHONPATH=%CD%\src
-python scripts/train_igtf.py --model 3 --dataset gossip --epochs 5 --batch-size 16
+python scripts/train_igtf.py --model claude3.5 --dataset gossip --epochs 5 --batch-size 16
 ```
 
 For Linux/macOS:
 
 ```bash
 export PYTHONPATH=$PWD/src
-python scripts/train_igtf.py --model 3 --dataset gossip --epochs 5 --batch-size 16
+python scripts/train_igtf.py --model claude3.5 --dataset gossip --epochs 5 --batch-size 16
 ```
 
-Available model ids are `1`, `2`, and `3`; available datasets are `weibo`,
-`gossip`, `politifact`, and `snopes`.
+Available model names are `qwen`, `gpt4`, and `claude3.5`; available datasets
+are `weibo`, `gossip`, `politifact`, and `snopes`.
 
 ## Notes
 

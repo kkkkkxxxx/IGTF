@@ -56,7 +56,7 @@ def normalize_batch(batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Train IGTF with cached 9-d intent data.")
-    parser.add_argument("--model", choices=AVAILABLE_MODELS, default="1")
+    parser.add_argument("--model", choices=AVAILABLE_MODELS, default="qwen")
     parser.add_argument("--dataset", choices=AVAILABLE_DATASETS, required=True)
     parser.add_argument("--data-root", default="intent_data")
     parser.add_argument("--output-dir", default="outputs")

@@ -36,22 +36,22 @@ DATASET_DATA_DIRS = {
 }
 
 MODEL_ALIASES = {
-    "1": "1",
-    "gpt": "1",
-    "gpt55": "1",
-    "gpt5.5": "1",
-    "gpt-5.5": "1",
-    "2": "2",
-    "qwen": "2",
-    "qwen2.5": "2",
-    "qwen-2.5": "2",
-    "3": "3",
-    "llama": "3",
-    "llama3": "3",
-    "llama-3": "3",
+    "1": "qwen",
+    "qwen": "qwen",
+    "qwen2.5": "qwen",
+    "qwen-2.5": "qwen",
+    "2": "gpt4",
+    "gpt": "gpt4",
+    "gpt4": "gpt4",
+    "gpt-4": "gpt4",
+    "3": "claude3.5",
+    "claude": "claude3.5",
+    "claude3.5": "claude3.5",
+    "claude-3.5": "claude3.5",
+    "claude35": "claude3.5",
 }
 
-AVAILABLE_MODELS = ("1", "2", "3")
+AVAILABLE_MODELS = ("qwen", "gpt4", "claude3.5")
 AVAILABLE_DATASETS = ("weibo", "gossip", "politifact", "snopes")
 AVAILABLE_DATASET_SPECS = tuple(f"{model}/{dataset}" for model in AVAILABLE_MODELS for dataset in AVAILABLE_DATASETS)
 
@@ -266,8 +266,8 @@ class IntentTextDataset(Dataset):
 def main() -> None:
     parser = argparse.ArgumentParser(description="Clean merged 9-d intent data and create balanced splits.")
     parser.add_argument("--data-root", default="intent_data")
-    parser.add_argument("--model", default="1", help="Model id or alias, e.g. 1/gpt55, 2/qwen, 3/llama.")
-    parser.add_argument("--dataset", required=True, help="Dataset name, or a combined spec such as 1/weibo.")
+    parser.add_argument("--model", default="qwen", help="Model name or alias, e.g. qwen, gpt4, claude3.5.")
+    parser.add_argument("--dataset", required=True, help="Dataset name, or a combined spec such as qwen/weibo.")
     parser.add_argument("--output-dir", required=True)
     parser.add_argument("--train-ratio", type=float, default=0.70)
     parser.add_argument("--val-ratio", type=float, default=0.15)
