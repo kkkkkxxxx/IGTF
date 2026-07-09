@@ -1,0 +1,16 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.venv/
+venv/
+outputs/
+checkpoints/
+*.pt
+*.pth
+*.bin
+*.safetensors
+modelscope_models/
+huggingface_cache/
+.env
+*.log
