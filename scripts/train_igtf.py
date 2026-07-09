@@ -15,12 +15,12 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 from transformers import AutoTokenizer
 
-from igtf.data import IntentTextDataset, load_dataset_split
+from igtf.data import AVAILABLE_DATASETS, IntentTextDataset, load_dataset_split
 from igtf.model import IGTFClassifier, IGTFConfig
 
 
 def default_bert_model(dataset_name: str) -> str:
-    if dataset_name == "weibo":
+    if dataset_name.lower() in {"1", "gpt", "gpt55", "gpt5.5", "weibo"}:
         return "bert-base-chinese"
     return "bert-base-uncased"
 
@@ -56,7 +56,7 @@ def normalize_batch(batch: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Train IGTF with cached 9-d intent data.")
-    parser.add_argument("--dataset", choices=["weibo", "gossip", "politifact", "snopes"], required=True)
+    parser.add_argument("--dataset", choices=AVAILABLE_DATASETS, required=True)
     parser.add_argument("--data-root", default="intent_data")
     parser.add_argument("--output-dir", default="outputs")
     parser.add_argument("--bert-model", default=None)

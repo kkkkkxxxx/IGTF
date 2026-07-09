@@ -1,0 +1,89 @@
+{
+  "format": "merged 9-dimensional intent data",
+  "models": {
+    "1": {
+      "model_id": "1",
+      "model_name": "gpt5.5",
+      "intent_dimensions": 9,
+      "record_count": 16345,
+      "source_counts": {
+        "cache/stratified/train_intents.json": 10217,
+        "cache/stratified/val_intents.json": 2417,
+        "cache/stratified/test_intents.json": 3711
+      },
+      "duplicate_keys_renamed": 0,
+      "invalid_vectors_skipped": 0,
+      "label_distribution": {
+        "1": 12535,
+        "0": 3810
+      },
+      "dominant_intent_distribution": {
+        "2": 2225,
+        "3": 4138,
+        "1": 3132,
+        "0": 6135,
+        "5": 350,
+        "4": 249,
+        "7": 39,
+        "8": 49,
+        "6": 28
+      },
+      "note": "Merged cached 9-d default/GPT-style Weibo train/val/test intent files."
+    },
+    "2": {
+      "model_id": "2",
+      "model_name": "qwen",
+      "intent_dimensions": 9,
+      "record_count": 3179,
+      "source_counts": {
+        "cache/politifact_qwen_intents.json": 3179
+      },
+      "duplicate_keys_renamed": 0,
+      "invalid_vectors_skipped": 0,
+      "label_distribution": {
+        "1": 1661,
+        "0": 1518
+      },
+      "dominant_intent_distribution": {
+        "2": 288,
+        "3": 586,
+        "0": 320,
+        "5": 647,
+        "8": 321,
+        "7": 344,
+        "4": 488,
+        "1": 158,
+        "6": 27
+      },
+      "note": "Cached 9-d Qwen PolitiFact intent file was already stored as one full file locally; no split-specific Qwen files were found."
+    },
+    "3": {
+      "model_id": "3",
+      "model_name": "llama",
+      "intent_dimensions": 9,
+      "record_count": 11575,
+      "source_counts": {
+        "cache/gossip_stratified/gossip_train_intents_llama3.json": 6943,
+        "cache/gossip_stratified/gossip_val_intents_llama3.json": 2329,
+        "cache/gossip_stratified/gossip_test_intents_llama3.json": 2303
+      },
+      "duplicate_keys_renamed": 0,
+      "invalid_vectors_skipped": 0,
+      "label_distribution": {
+        "0": 8428,
+        "1": 3147
+      },
+      "dominant_intent_distribution": {
+        "2": 7983,
+        "3": 1919,
+        "0": 1100,
+        "1": 364,
+        "4": 161,
+        "6": 36,
+        "5": 8,
+        "7": 4
+      },
+      "note": "Merged cached 9-d LLaMA3 GossipCop train/val/test intent files."
+    }
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "model_id": "1",
+  "model_name": "gpt5.5",
+  "intent_dimensions": 9,
+  "record_count": 16345,
+  "source_counts": {
+    "cache/stratified/train_intents.json": 10217,
+    "cache/stratified/val_intents.json": 2417,
+    "cache/stratified/test_intents.json": 3711
+  },
+  "duplicate_keys_renamed": 0,
+  "invalid_vectors_skipped": 0,
+  "label_distribution": {
+    "1": 12535,
+    "0": 3810
+  },
+  "dominant_intent_distribution": {
+    "2": 2225,
+    "3": 4138,
+    "1": 3132,
+    "0": 6135,
+    "5": 350,
+    "4": 249,
+    "7": 39,
+    "8": 49,
+    "6": 28
+  },
+  "note": "Merged cached 9-d default/GPT-style Weibo train/val/test intent files."
+}
